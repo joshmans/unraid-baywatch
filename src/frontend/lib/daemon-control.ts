@@ -3,14 +3,14 @@
 // this module only matters when the daemon's own /plugins/.../api/* proxy
 // is unreachable, so it can never depend on that API being up.
 //
-// Auth: window.DISKLOCATION_NEXT_PAGE is set by DiskLocationNext.page's
+// Auth: window.BAYWATCH_PAGE is set by BayWatch.page's
 // embedded PHP, carrying Unraid's own CSRF token - the same pattern a real
 // installed plugin (unraid-zram-card) uses for exactly this, confirmed
 // against that plugin's actual .page/.php files rather than invented here.
 
 declare global {
   interface Window {
-    DISKLOCATION_NEXT_PAGE?: { CSRF: string; API: string };
+    BAYWATCH_PAGE?: { CSRF: string; API: string };
   }
 }
 
@@ -25,7 +25,7 @@ export interface DaemonActionResult {
 }
 
 function pageContext(): { CSRF: string; API: string } | null {
-  return window.DISKLOCATION_NEXT_PAGE ?? null;
+  return window.BAYWATCH_PAGE ?? null;
 }
 
 async function call(action: string, params: Record<string, string> = {}): Promise<any> {

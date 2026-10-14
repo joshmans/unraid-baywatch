@@ -4,8 +4,8 @@ import type { StoredLayout } from "./shared/chassis-types.js";
 
 // Same config-storage convention as config.ts's CONFIG_PATH.
 const LAYOUT_PATH =
-  process.env.DISKLOCATION_NEXT_LAYOUT ??
-  "/boot/config/plugins/unraid-disklocation-next/layout.json";
+  process.env.BAYWATCH_LAYOUT ??
+  "/boot/config/plugins/unraid-baywatch/layout.json";
 
 export function loadLayoutConfig(): StoredLayout | null {
   if (!existsSync(LAYOUT_PATH)) return null;

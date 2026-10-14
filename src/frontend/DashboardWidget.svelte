@@ -12,7 +12,7 @@
   // occupancy + health, never the editing state (logos, brand overrides,
   // SMART History tab, Settings) the main app carries. No CSRF/daemon-
   // control here either - this never starts/stops the daemon, only reads.
-  const API_BASE = "/plugins/unraid-disklocation-next/api";
+  const API_BASE = "/plugins/unraid-baywatch/api";
 
   let daemonReachable = true;
   let productionEmpty = false;
@@ -156,7 +156,7 @@
   {#if !daemonReachable}
     <p class="status err">The plugin's service isn't running.</p>
   {:else if productionEmpty}
-    <p class="status">Disk Location Next is not configured.</p>
+    <p class="status">Bay Watch is not configured.</p>
   {:else if !layout}
     <p class="status">Loading...</p>
   {:else}

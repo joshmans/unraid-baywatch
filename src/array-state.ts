@@ -5,7 +5,7 @@ import type { DriveRole } from "./shared/chassis-types.js";
 // Not a user-facing setting (this is Unraid's own fixed runtime-state
 // directory), same convention as classic-import.ts's CLASSIC_DIR - the env
 // override exists purely for local testing.
-const EMHTTP_DIR = process.env.DISKLOCATION_NEXT_EMHTTP_DIR ?? "/var/local/emhttp";
+const EMHTTP_DIR = process.env.BAYWATCH_EMHTTP_DIR ?? "/var/local/emhttp";
 const DISKS_INI_PATH = `${EMHTTP_DIR}/disks.ini`;
 const DEVS_INI_PATH = `${EMHTTP_DIR}/devs.ini`;
 

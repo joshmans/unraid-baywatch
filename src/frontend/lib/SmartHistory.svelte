@@ -3,7 +3,7 @@
   import TrendChart from "./TrendChart.svelte";
   import { DEFAULT_LED_COLORS } from "./status";
 
-  const API_BASE = "/plugins/unraid-disklocation-next/api";
+  const API_BASE = "/plugins/unraid-baywatch/api";
 
   // Every disk unraid-api reports, not just tray-assigned ones - trend
   // history is useful before you've configured a chassis at all.

@@ -1,7 +1,7 @@
 <?xml version='1.0' standalone='yes'?>
 
 <!DOCTYPE PLUGIN [
-<!ENTITY name       "unraid-disklocation-next">
+<!ENTITY name       "unraid-baywatch">
 <!ENTITY author     "Joshua Mans">
 <!ENTITY version    "2026.09.26">
 <!-- Unraid's page router (webGui/template.php) looks pages up by their .page
@@ -9,8 +9,8 @@
      a real box, and matches how hbaviewer (launch="Tools/HBAviewer_Monitor")
      and unassigned.devices.preclear-next (launch="Tools/Preclear") do it
      despite both also using Menu="DiskUtilities". The page file here is
-     DiskLocationNext.page, not &name;.page, so launch has to name that. -->
-<!ENTITY launch     "Tools/DiskLocationNext">
+     BayWatch.page, not &name;.page, so launch has to name that. -->
+<!ENTITY launch     "Tools/BayWatch">
 <!ENTITY pluginURL  "https://raw.githubusercontent.com/joshmans/&name;/main/plugin/&name;.plg">
 <!ENTITY packageURL "https://github.com/joshmans/&name;/releases/download/v&version;/&name;-&version;.txz">
 <!ENTITY sha256     "e6fe774d6a92c9941a529999c8059d8b28421cfeedde6f1fbf21a5e3abc8c8eb">
@@ -155,9 +155,9 @@
      version-less local filename (&name;.txz) specifically so removepkg
      calls could stay version-independent - that choice broke every future
      upgrade forever, since every release registered under the identical
-     package name "unraid-disklocation-next" and upgradepkg silently
+     package name "unraid-baywatch" and upgradepkg silently
      skipped every subsequent install with "Skipping package
-     unraid-disklocation-next (already installed)". Confirmed live: the
+     unraid-baywatch (already installed)". Confirmed live: the
      daemon stayed on the very first installed binary through two
      subsequent releases despite Unraid's own plugin-version bookkeeping
      correctly showing the newer version each time - the outer "is this
@@ -174,7 +174,7 @@
 # older installs of this same plugin used a version-less package name),
 # so the upgradepkg step below never again sees "already installed" and
 # silently no-ops. Slackware allows this to run even when nothing matches.
-for pkg in /var/log/packages/unraid-disklocation-next*; do
+for pkg in /var/log/packages/unraid-baywatch*; do
   [ -e "$pkg" ] || continue
   removepkg "$(basename "$pkg")" || true
 done
@@ -211,12 +211,36 @@ done
 <![CDATA[
 set -e
 
-NAME="unraid-disklocation-next"
+NAME="unraid-baywatch"
 PLUGIN_LOC="/boot/config/plugins/${NAME}"
 EMHTTP_LOC="/usr/local/emhttp/plugins/${NAME}"
 RCD_LOC="/usr/local/etc/rc.d"
 
 mkdir -p "$PLUGIN_LOC"
+
+# One-time move from the old name. This plugin was "Disk Location Next"
+# (unraid-disklocation-next) until it was renamed to Bay Watch. Copy the
+# user's data across, stop the old daemon, and take the old plugin out. The
+# old folder is never deleted: it also holds large old downloaded packages,
+# and the user can remove it once they have checked the copy.
+OLD_NAME="unraid-disklocation-next"
+OLD_LOC="/boot/config/plugins/${OLD_NAME}"
+if [ -d "$OLD_LOC" ] && [ ! -e "$PLUGIN_LOC/.migrated-from-${OLD_NAME}" ]; then
+  echo "Moving settings from ${OLD_NAME} ..."
+  [ -x "$RCD_LOC/rc.${OLD_NAME}" ] && "$RCD_LOC/rc.${OLD_NAME}" stop || true
+  # Only the user's data. Never copy over something that already exists here.
+  for f in settings.json layout.json smart-history.db smart-history.db-wal smart-history.db-shm; do
+    [ -e "$OLD_LOC/$f" ] && [ ! -e "$PLUGIN_LOC/$f" ] && cp -p "$OLD_LOC/$f" "$PLUGIN_LOC/$f"
+  done
+  [ -d "$OLD_LOC/logos" ] && [ ! -e "$PLUGIN_LOC/logos" ] && cp -pR "$OLD_LOC/logos" "$PLUGIN_LOC/logos"
+  # Take the old plugin out. Its remove script stops the daemon, removes its
+  # package and its nginx include; it leaves the old folder alone.
+  if [ -e "/var/log/plugins/${OLD_NAME}.plg" ]; then
+    plugin remove "${OLD_NAME}.plg" || true
+  fi
+  touch "$PLUGIN_LOC/.migrated-from-${OLD_NAME}"
+  echo "Copied from ${OLD_LOC}. That folder was left in place; delete it once you have checked the copy."
+fi
 
 # Cleanup from a fixed bug: installs from before the local cache filename
 # carried a version stashed the download at a fixed, version-less path -
@@ -231,7 +255,7 @@ rm -f "$PLUGIN_LOC/$NAME.txz"
 # Utilities group), so the stub is now dead weight - upgradepkg only adds/
 # overwrites files listed in the new package, it doesn't remove ones only
 # the old package shipped, so this has to be deleted explicitly.
-rm -f "$EMHTTP_LOC/DiskLocationNextTools.page"
+rm -f "$EMHTTP_LOC/BayWatchTools.page"
 
 if [ ! -f "$PLUGIN_LOC/layout.json" ]; then
   cat > "$PLUGIN_LOC/layout.json" <<'JSON'
@@ -274,14 +298,14 @@ echo "$NAME installed."
 <FILE Run="/bin/bash" Method="remove">
 <INLINE>
 <![CDATA[
-NAME="unraid-disklocation-next"
+NAME="unraid-baywatch"
 PLUGIN_LOC="/boot/config/plugins/${NAME}"
 EMHTTP_LOC="/usr/local/emhttp/plugins/${NAME}"
 RCD_LOC="/usr/local/etc/rc.d"
 
 "$RCD_LOC/rc.$NAME" stop || true
 
-for pkg in /var/log/packages/unraid-disklocation-next*; do
+for pkg in /var/log/packages/unraid-baywatch*; do
   [ -e "$pkg" ] || continue
   removepkg "$(basename "$pkg")" || true
 done

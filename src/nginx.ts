@@ -17,15 +17,15 @@ import { execFile } from "node:child_process";
 // within a fraction of a second any time it changes without our line in it,
 // regardless of who or what triggered that regeneration.
 
-const PLUGIN_NAME = "unraid-disklocation-next";
+const PLUGIN_NAME = "unraid-baywatch";
 const DAEMON_PORT = Number(process.env.PORT ?? 3838);
 const HEAL_DEBOUNCE_MS = 300;
 
-const LOCATIONS_CONF_PATH = process.env.DISKLOCATION_NEXT_LOCATIONS_CONF ?? "/etc/nginx/conf.d/locations.conf";
+const LOCATIONS_CONF_PATH = process.env.BAYWATCH_LOCATIONS_CONF ?? "/etc/nginx/conf.d/locations.conf";
 const INCLUDE_PATH =
-  process.env.DISKLOCATION_NEXT_NGINX_INCLUDE ??
+  process.env.BAYWATCH_NGINX_INCLUDE ??
   `/boot/config/plugins/${PLUGIN_NAME}/nginx/${PLUGIN_NAME}.conf`;
-const NGINX_BIN = process.env.DISKLOCATION_NEXT_NGINX_BIN ?? "/usr/sbin/nginx";
+const NGINX_BIN = process.env.BAYWATCH_NGINX_BIN ?? "/usr/sbin/nginx";
 
 function includeFileContent(): string {
   return `# Generated and kept in sync by src/nginx.ts - do not hand-edit, your
@@ -111,7 +111,7 @@ export interface NginxSelfHeal {
  * A no-op on hosts with no real nginx to manage (local dev).
  */
 export function startNginxSelfHeal(): NginxSelfHeal {
-  if (process.env.DISKLOCATION_NEXT_DISABLE_NGINX_INTEGRATION === "1" || !existsSync(NGINX_BIN)) {
+  if (process.env.BAYWATCH_DISABLE_NGINX_INTEGRATION === "1" || !existsSync(NGINX_BIN)) {
     return { close: () => {} };
   }
 

@@ -4,7 +4,7 @@
   import type { DiskResult } from "../../graphql/queries";
   import { ROLE_COLORS, roleLabel, formatSize } from "./role";
 
-  const API_BASE = "/plugins/unraid-disklocation-next/api";
+  const API_BASE = "/plugins/unraid-baywatch/api";
 
   // Read-only inputs; App.svelte owns the fetch/persist for the same reason
   // Settings.svelte does - one source of truth for the stored document.

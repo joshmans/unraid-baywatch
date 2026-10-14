@@ -3,7 +3,7 @@ Icon="server"
 Tag="server"
 Type="xmenu"
 Tabs="false"
-Title="Disk Location Next"
+Title="Bay Watch"
 ---
 <?php
 // Thin shell only, deliberately no PHP logic beyond this - the real UI is
@@ -21,6 +21,6 @@ Title="Disk Location Next"
 // since it's exactly what's unreachable in that case.
 $csrf = $var['csrf_token'] ?? '';
 ?>
-<script>window.DISKLOCATION_NEXT_PAGE = {CSRF: '<?= addslashes($csrf) ?>', API: '/plugins/unraid-disklocation-next/daemon-control.php'};</script>
-<div id="unraid-disklocation-next-app"></div>
-<script src="/plugins/unraid-disklocation-next/app/dist/frontend.js"></script>
+<script>window.BAYWATCH_PAGE = {CSRF: '<?= addslashes($csrf) ?>', API: '/plugins/unraid-baywatch/daemon-control.php'};</script>
+<div id="unraid-baywatch-app"></div>
+<script src="/plugins/unraid-baywatch/app/dist/frontend.js"></script>

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Builds and (with --release) publishes a real installable release of the
-# unraid-disklocation-next plugin: compiled frontend, esbuild-bundled +
+# unraid-baywatch plugin: compiled frontend, esbuild-bundled +
 # Node-SEA-packaged backend binary, packed into a Slackware .txz Unraid's own
 # `<FILE Run="installpkg"><URL>...</URL><SHA256>...</SHA256></FILE>`
 # convention expects (SHA256, not MD5 - the stronger hash Unraid's Community
@@ -21,7 +21,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-NAME="unraid-disklocation-next"
+NAME="unraid-baywatch"
 RELEASE_MODE=false
 [[ "${1:-}" == "--release" ]] && RELEASE_MODE=true
 
@@ -76,14 +76,14 @@ EMHTTP_DIR="$STAGE/usr/local/emhttp/plugins/${NAME}"
 RCD_DIR="$STAGE/usr/local/etc/rc.d"
 mkdir -p "$EMHTTP_DIR/app/bin" "$RCD_DIR"
 
-cp plugin/pages/DiskLocationNext.page "$EMHTTP_DIR/DiskLocationNext.page"
-cp plugin/pages/DiskLocationNextDashboard.page "$EMHTTP_DIR/DiskLocationNextDashboard.page"
+cp plugin/pages/BayWatch.page "$EMHTTP_DIR/BayWatch.page"
+cp plugin/pages/BayWatchDashboard.page "$EMHTTP_DIR/BayWatchDashboard.page"
 cp plugin/daemon-control.php "$EMHTTP_DIR/daemon-control.php"
 mkdir -p "$EMHTTP_DIR/app/dist"
 cp dist/frontend.js "$EMHTTP_DIR/app/dist/frontend.js"
 cp dist/dashboard.js "$EMHTTP_DIR/app/dist/dashboard.js"
-cp dist/unraid-disklocation-next "$EMHTTP_DIR/app/bin/${NAME}"
-cp plugin/rc.d/rc.unraid-disklocation-next "$RCD_DIR/rc.${NAME}"
+cp dist/unraid-baywatch "$EMHTTP_DIR/app/bin/${NAME}"
+cp plugin/rc.d/rc.unraid-baywatch "$RCD_DIR/rc.${NAME}"
 chmod 755 "$EMHTTP_DIR/app/bin/${NAME}" "$RCD_DIR/rc.${NAME}"
 
 ARCHIVE_DIR="$(pwd)/archive"
