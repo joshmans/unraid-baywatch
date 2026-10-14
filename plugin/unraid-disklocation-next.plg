@@ -1,0 +1,80 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+<!ENTITY name       "unraid-disklocation-next">
+<!ENTITY author     "Joshua Mans">
+<!ENTITY version    "2026.10.14">
+<!ENTITY launch     "Tools/BayWatch">
+<!ENTITY pluginURL  "https://raw.githubusercontent.com/joshmans/unraid-baywatch/main/plugin/unraid-disklocation-next.plg">
+<!ENTITY supportURL "https://github.com/joshmans/unraid-baywatch">
+]>
+
+<!--
+    TRANSITION FILE. Do not rename or delete.
+
+    Disk Location Next was renamed to Bay Watch (unraid-baywatch). An install of the old
+    plugin finds out about updates by fetching its own pluginURL, which is this path. The
+    real plugin now lives at plugin/unraid-baywatch.plg, so this file exists only to give
+    old installs an "update" that installs Bay Watch. It ships no code of its own.
+
+    The file keeps the old plugin's name and must stay at this path. Its version has to
+    compare greater than the last real release of the old plugin (2026.09.26).
+-->
+
+<PLUGIN name="&name;"
+        author="&author;"
+        version="&version;"
+        launch="&launch;"
+        pluginURL="&pluginURL;"
+        icon="server"
+        support="&supportURL;"
+        min="7.2.0"
+>
+
+<CHANGES>
+###2026.10.14
+ - Disk Location Next is now **Bay Watch**. This update installs Bay Watch, copies your settings, layout, logos and SMART history across, and removes this old entry. The old folder in /boot/config/plugins is left in place.
+</CHANGES>
+
+<!-- Install Bay Watch. Its own install script copies the data, stops the old daemon and
+     removes the old plugin; this script only has to start it, then take the old plugin
+     entry out once the plugin manager has finished with this install. -->
+<FILE Run="/bin/bash">
+<INLINE>
+<![CDATA[
+echo "Disk Location Next is now Bay Watch - installing it."
+plugin install https://raw.githubusercontent.com/joshmans/unraid-baywatch/main/plugin/unraid-baywatch.plg
+rc=$?
+if [ $rc -ne 0 ]; then
+  echo "Bay Watch did not install (exit $rc). This plugin was left as it is."
+  echo "Install it by hand from https://github.com/joshmans/unraid-baywatch"
+  exit $rc
+fi
+# The plugin manager registers this file as installed after the script ends, which would put
+# the old entry back. Remove it once that is done.
+nohup setsid bash -c 'sleep 45; plugin remove unraid-disklocation-next.plg' >/dev/null 2>&1 &
+echo "The old Disk Location Next entry will be removed in under a minute."
+]]>
+</INLINE>
+</FILE>
+
+<!-- Remove: the old plugin's own cleanup, for the rare case this entry is removed by hand.
+     It must not touch Bay Watch or the data folders. -->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+<![CDATA[
+NAME="unraid-disklocation-next"
+[ -x /usr/local/etc/rc.d/rc.$NAME ] && /usr/local/etc/rc.d/rc.$NAME stop || true
+for pkg in /var/log/packages/$NAME*; do
+  [ -e "$pkg" ] || continue
+  removepkg "$(basename "$pkg")" || true
+done
+rm -rf /usr/local/emhttp/plugins/$NAME
+sed -i "\|include /boot/config/plugins/$NAME/nginx/$NAME.conf;|d" /etc/nginx/conf.d/locations.conf 2>/dev/null || true
+nginx -t 2>/dev/null && nginx -s reload 2>/dev/null || true
+echo "$NAME removed. /boot/config/plugins/$NAME was left in place."
+]]>
+</INLINE>
+</FILE>
+
+</PLUGIN>
