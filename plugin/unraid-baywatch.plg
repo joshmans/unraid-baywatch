@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name       "unraid-baywatch">
 <!ENTITY author     "Joshua Mans">
-<!ENTITY version    "2026.09.26">
+<!ENTITY version    "2026.10.14">
 <!-- Unraid's page router (webGui/template.php) looks pages up by their .page
      filename via basename($path), not by Menu= - confirmed by reading it on
      a real box, and matches how hbaviewer (launch="Tools/HBAviewer_Monitor")
@@ -13,7 +13,7 @@
 <!ENTITY launch     "Tools/BayWatch">
 <!ENTITY pluginURL  "https://raw.githubusercontent.com/joshmans/&name;/main/plugin/&name;.plg">
 <!ENTITY packageURL "https://github.com/joshmans/&name;/releases/download/v&version;/&name;-&version;.txz">
-<!ENTITY sha256     "e6fe774d6a92c9941a529999c8059d8b28421cfeedde6f1fbf21a5e3abc8c8eb">
+<!ENTITY sha256     "c45bfdb392b5b56c3452751d11fb6b26d676bcec0f64b1f5d0c723d441db3493">
 <!ENTITY pluginLOC  "/boot/config/plugins/&name;">
 <!ENTITY emhttpLOC  "/usr/local/emhttp/plugins/&name;">
 <!ENTITY rcdLOC     "/usr/local/etc/rc.d">
@@ -48,6 +48,13 @@
 -->
 
 <CHANGES>
+###2026.10.14
+ - Merge pull request #17 from joshmans/rename-to-bay-watch
+ - Keep a transition file at the old plugin's URL so old installs update to Bay Watch
+ - Rename the plugin icon SVG to match
+ - Rename the plugin icon file to match
+ - Rename Disk Location Next to Bay Watch
+
 ###2026.09.26
  - Fix the Chassis layout buttons doing nothing over plain HTTP (#15)
 
