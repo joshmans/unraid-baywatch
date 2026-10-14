@@ -1,6 +1,6 @@
 <?php
 /**
- * Action handler for controlling the unraid-disklocation-next daemon from
+ * Action handler for controlling the unraid-baywatch daemon from
  * the plugin's own page - deliberately outside the Node daemon's own API,
  * since the whole point is working when that daemon is down (can't ask a
  * dead process to start itself).
@@ -13,9 +13,9 @@
  * never matches).
  */
 
-$PIDFILE = '/var/run/unraid-disklocation-next.pid';
-$LAYOUT_PATH = '/boot/config/plugins/unraid-disklocation-next/layout.json';
-$RC_SCRIPT = '/usr/local/etc/rc.d/rc.unraid-disklocation-next';
+$PIDFILE = '/var/run/unraid-baywatch.pid';
+$LAYOUT_PATH = '/boot/config/plugins/unraid-baywatch/layout.json';
+$RC_SCRIPT = '/usr/local/etc/rc.d/rc.unraid-baywatch';
 $DEFAULT_PORT = 3838;
 
 header('Content-Type: application/json');

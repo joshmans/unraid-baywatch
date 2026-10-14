@@ -1,12 +1,29 @@
-# Disk Location: Next
+# Bay Watch
 
-A ground-up rewrite of the [Disk Location](https://github.com/joshmans/unraid-disklocation)
-Unraid plugin concept: a visual map of which physical bay/tray/PCIe slot each of your drives
-lives in, plus SMART health history over time. This version is a standalone TypeScript/Node.js
-service that talks to Unraid's native `unraid-api` GraphQL interface (Unraid 7.2+) and Unraid's
-own runtime state files, instead of a classic PHP webGUI plugin.
+*Formerly **Disk Location Next**.*
 
-This is a **separate codebase** from the original plugin - no PHP code, files, or history carry
+Every bay needs a lifeguard. Bay Watch keeps an eye on your drives: a visual map of which
+physical bay, tray or PCIe slot each one lives in, plus SMART health history over time. No
+slow-motion running along the array required (though if your drive activity LEDs are blinking in
+slow motion, that's what the Locate button is for).
+
+It started life as a ground-up rewrite of the [Disk Location](https://github.com/olehj/disklocation)
+Unraid plugin concept. This version is a standalone TypeScript/Node.js service that talks to
+Unraid's native `unraid-api` GraphQL interface (Unraid 7.2+) and Unraid's own runtime state
+files, instead of a classic PHP webGUI plugin.
+
+> **About the name.** This project was first called "Disk Location Next", which made it sound
+> like an official next version of Disk Location. It isn't: Bay Watch is an independent project
+> with its own codebase, and it is not affiliated with Disk Location or its author, Ole-Henrik
+> Jakobsen (olehj). He kindly suggested a name that makes the difference clear, so it is now Bay
+> Watch. Credit for the original idea belongs to Disk Location, which is still maintained and
+> well worth using on its own.
+>
+> **Already installed as Disk Location Next?** Installing Bay Watch carries over your Unraid API
+> settings, chassis layout, logos and SMART history, and removes the old plugin. See
+> [Moving from Disk Location Next](#moving-from-disk-location-next).
+
+This is a **separate codebase** from the Disk Location plugin - no PHP code, files, or history carry
 over, only the underlying idea and the lessons learned building it. See [ROADMAP.md](ROADMAP.md)
 for the full architecture history, every real API gap this project ran into (and how each was
 worked around), and what's still open.
@@ -56,15 +73,26 @@ Not yet in Community Applications - install by pasting this repo's `.plg` URL di
 Unraid's **Plugins > Install Plugin** field:
 
 ```
-https://raw.githubusercontent.com/joshmans/unraid-disklocation-next/main/plugin/unraid-disklocation-next.plg
+https://raw.githubusercontent.com/joshmans/unraid-baywatch/main/plugin/unraid-baywatch.plg
 ```
 
 A Community Apps entry is planned as a fast-follow once a real tagged release has been installed
 and verified on a live box (see ROADMAP.md's open questions).
 
+### Moving from Disk Location Next
+
+If you installed this plugin under its old name (`unraid-disklocation-next`), install Bay Watch
+with the URL above. The installer, once, copies `settings.json`, `layout.json`, the SMART-history
+database and any uploaded logos from `/boot/config/plugins/unraid-disklocation-next` into
+`/boot/config/plugins/unraid-baywatch`, stops the old daemon, and removes the old plugin. It
+never deletes the old folder, so you can check everything came across and then delete it yourself
+(it also holds old downloaded packages that can be large). The page is now at **Tools > Bay
+Watch**, and its web address changed from `/plugins/unraid-disklocation-next/` to
+`/plugins/unraid-baywatch/`.
+
 ### First-run configuration
 
-Open **Tools > Disk Location Next > Settings > Unraid API connection** and enter your GraphQL
+Open **Tools > Bay Watch > Settings > Unraid API connection** and enter your GraphQL
 URL (typically `https://localhost/graphql`, since the daemon runs on the box itself) and API key.
 Everything else (chassis layout, disk assignments, skins, brand logos, LED colors, SMART-history
 retention) is configured entirely from the plugin's own Tools page too - no config files to
@@ -72,7 +100,7 @@ hand-edit.
 
 ## Using it
 
-Open **Tools > Disk Location Next**. Five tabs:
+Open **Tools > Bay Watch**. Five tabs:
 
 - **Tray Map** - the live, read-only chassis view. Shows "the plugin's service isn't running"
   with a Start button if the daemon is down, instead of silently falling back to sample data.

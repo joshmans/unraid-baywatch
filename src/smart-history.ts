@@ -16,10 +16,10 @@ import type { DriveStatus } from "./shared/chassis-types.js";
 // shell out to smartctl itself here too, on the same 700ms-interval-safe
 // execFile+argv pattern locate.ts already established (never a shell string).
 
-const DEFAULT_DB_PATH = "/boot/config/plugins/unraid-disklocation-next/smart-history.db";
-export const SMARTCTL_BIN = process.env.DISKLOCATION_NEXT_SMARTCTL_BIN ?? "smartctl";
-const POLL_MS = Number(process.env.DISKLOCATION_NEXT_SMART_POLL_MS ?? 30 * 60 * 1000);
-const RETENTION_DAYS = Number(process.env.DISKLOCATION_NEXT_SMART_RETENTION_DAYS ?? 180);
+const DEFAULT_DB_PATH = "/boot/config/plugins/unraid-baywatch/smart-history.db";
+export const SMARTCTL_BIN = process.env.BAYWATCH_SMARTCTL_BIN ?? "smartctl";
+const POLL_MS = Number(process.env.BAYWATCH_SMART_POLL_MS ?? 30 * 60 * 1000);
+const RETENTION_DAYS = Number(process.env.BAYWATCH_SMART_RETENTION_DAYS ?? 180);
 const FIRST_POLL_DELAY_MS = 10_000;
 
 export interface SmartSample {
@@ -46,7 +46,7 @@ let db: DatabaseSync | undefined;
  * this plugin's other settings.
  */
 function resolveDbPath(): string {
-  if (process.env.DISKLOCATION_NEXT_SMART_DB) return process.env.DISKLOCATION_NEXT_SMART_DB;
+  if (process.env.BAYWATCH_SMART_DB) return process.env.BAYWATCH_SMART_DB;
   return loadLayoutConfig()?.smartHistoryDbPath || DEFAULT_DB_PATH;
 }
 

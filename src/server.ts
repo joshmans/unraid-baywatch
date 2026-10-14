@@ -11,7 +11,7 @@ import { saveLogo, readLogo, logoFilename } from "./logos.js";
 import { sampleActivity } from "./disk-activity.js";
 
 // Deliberately no web framework - still just node:http. Routes beyond the
-// health check are proxied at /plugins/unraid-disklocation-next/api/ (see
+// health check are proxied at /plugins/unraid-baywatch/api/ (see
 // nginx.ts, which strips that prefix before forwarding here).
 const PORT = Number(process.env.PORT ?? 3838);
 
@@ -218,7 +218,7 @@ const server = createServer(async (req, res) => {
 // check auth, so binding every interface would let any host on the network
 // rewrite settings.json (graphqlUrl/apiKey), layout.json and logos/.
 server.listen(PORT, "127.0.0.1", () => {
-  console.log(`unraid-disklocation-next listening on 127.0.0.1:${PORT}`);
+  console.log(`unraid-baywatch listening on 127.0.0.1:${PORT}`);
   // Only worth registering with nginx once we're actually listening -
   // otherwise a reload could point it at a port nothing answers on yet.
   startNginxSelfHeal();

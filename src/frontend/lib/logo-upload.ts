@@ -6,7 +6,7 @@
 // any other logo URL from here on - no separate "local asset" concept
 // downstream of this.
 
-const API_BASE = "/plugins/unraid-disklocation-next/api";
+const API_BASE = "/plugins/unraid-baywatch/api";
 
 export async function uploadLogoFile(
   kind: "skin" | "brand",

@@ -56,13 +56,13 @@ data*.
   netbird-unraid already install/supervise non-PHP daemons this way, via an `rc.d` script
   under `/usr/local/etc/rc.d/` (never `/etc/rc.d/`, which Unraid owns as a runtime symlink -
   packaging into it can break nginx/php-fpm/samba/docker) started by an array-start event
-  hook. Skeleton: [plugin/rc.d/rc.unraid-disklocation-next](plugin/rc.d/rc.unraid-disklocation-next),
-  [plugin/unraid-disklocation-next.plg](plugin/unraid-disklocation-next.plg).
+  hook. Skeleton: [plugin/rc.d/rc.unraid-baywatch](plugin/rc.d/rc.unraid-baywatch),
+  [plugin/unraid-baywatch.plg](plugin/unraid-baywatch.plg).
 - **UI delivery: mounted into the DOM, not an iframe.** The `.page` file is a normal plugin
   page with a mount `<div>` and a `<script>` tag loading this project's own bundled
   frontend JS - it renders in the same document, not a nested browsing context (iframing
   Unraid's own UI is a known source of breakage, e.g. the Connect plugin's iframe issues on
-  the forums). Skeleton: [plugin/pages/DiskLocationNext.page](plugin/pages/DiskLocationNext.page).
+  the forums). Skeleton: [plugin/pages/BayWatch.page](plugin/pages/BayWatch.page).
   The nginx registration itself is owned by the daemon at runtime, not a static file - see
   [src/nginx.ts](src/nginx.ts) and the durability finding below.
   **Corrected against a real box (2026-09), replacing wrong assumptions this bullet used to
@@ -70,7 +70,7 @@ data*.
   - The `.page` file must be installed flat at `/usr/local/emhttp/plugins/<name>/<Basename>.page`
     - **not** in a `pages/` subdirectory (this repo's own `plugin/pages/` is just a source-tree
     choice; a real install step needs to flatten it). Its URL is `/<TopMenu>/<Basename>`, e.g.
-    `/Tools/DiskLocationNext` - confirmed by checking a real sibling plugin's own working URL.
+    `/Tools/BayWatch` - confirmed by checking a real sibling plugin's own working URL.
     A colliding `Title` with another installed plugin (we originally reused "Disk Location")
     is also a real, silent failure mode - menu entries need to be visibly distinct.
   - Unraid's `nginx.conf` does **not** wildcard-include `/etc/nginx/conf.d/*.conf` - it
@@ -98,7 +98,7 @@ data*.
     bypassing Unraid's regenerating wrapper) is used for every reload here, same as
     `u-manager-companion`'s cleanup script does - `rc.nginx reload` would just re-trigger the
     exact regeneration this is healing from. Verified twice: first against scratch files
-    standing in for the real paths (`DISKLOCATION_NEXT_LOCATIONS_CONF`/`_NGINX_INCLUDE`/
+    standing in for the real paths (`BAYWATCH_LOCATIONS_CONF`/`_NGINX_INCLUDE`/
     `_NGINX_BIN` env overrides) and a fake `nginx` binary logging its invocations - cold start
     appended the line and reloaded once, overwriting the fake `locations.conf` to simulate a
     regeneration triggered a heal + reload within ~1s, a no-op touch triggered no reload - then
@@ -183,8 +183,8 @@ data*.
   `smart_status`/`ata_smart_attributes`/the NVMe log/`scsi_grown_defect_list`/`temperature`
   present as "nothing to record" (a standby skip or an unsupported/errored device) rather
   than guessing at smartctl's exact standby-skip JSON shape. Runs once ~10s after startup
-  then every 30 minutes (`DISKLOCATION_NEXT_SMART_POLL_MS`), pruning samples past a 180-day
-  default retention (`DISKLOCATION_NEXT_SMART_RETENTION_DAYS`) each cycle. Exposed via
+  then every 30 minutes (`BAYWATCH_SMART_POLL_MS`), pruning samples past a 180-day
+  default retention (`BAYWATCH_SMART_RETENTION_DAYS`) each cycle. Exposed via
   `GET /smart-history/latest` (`{serial: status}`) and `GET /smart-history?serial=...`
   (full sample history). Verified against a real daemon process with a fake `smartctl`
   binary and a mock GraphQL server standing in for `unraid-api`, covering all three device
@@ -371,7 +371,7 @@ data*.
   The hard part: **when the daemon is down, this plugin's own API is exactly what's
   unreachable**, so starting it - and changing its port, needed so it doesn't collide
   with a Docker container or other service - can't go through
-  `/plugins/unraid-disklocation-next/api/*` at all. This goes through Unraid's own
+  `/plugins/unraid-baywatch/api/*` at all. This goes through Unraid's own
   always-running PHP/nginx layer instead, using the real, verified convention for it
   (confirmed by reading an already-installed plugin, `unraid-zram-card`, not invented):
   its `.page` file exposes Unraid's own CSRF token (`$var['csrf_token']`, available to
@@ -381,8 +381,8 @@ data*.
   pipeline) validates that token server-side with `hash_equals()` against
   `/var/local/emhttp/var.ini`'s current token - failing closed if that file can't be
   read. [plugin/daemon-control.php](plugin/daemon-control.php) copies this exactly, and
-  [plugin/pages/DiskLocationNext.page](plugin/pages/DiskLocationNext.page) exposes
-  `window.DISKLOCATION_NEXT_PAGE = {CSRF, API}` the same way. Three actions: `status`
+  [plugin/pages/BayWatch.page](plugin/pages/BayWatch.page) exposes
+  `window.BAYWATCH_PAGE = {CSRF, API}` the same way. Three actions: `status`
   (reads `port` straight out of `layout.json`, default 3838 - checks "is it running" via
   `file_exists("/proc/$pid")` on the rc.d pidfile, a zero-extension-dependency
   equivalent of `kill -0` that doesn't need PHP's `posix` extension), `start` (always
@@ -395,18 +395,18 @@ data*.
   `chassis.ts`'s own `emptyLayout` shape, so the frontend never has to handle a document
   missing those keys).
 
-  `plugin/rc.d/rc.unraid-disklocation-next`'s `start()` now reads the configured port via
+  `plugin/rc.d/rc.unraid-baywatch`'s `start()` now reads the configured port via
   `jq` (already relied on elsewhere in Unraid's own `rc.nginx`, not a new dependency)
   before building its `EXEC` line, defaulting to 3838 if unset/unreadable - matches the
   "only changeable while stopped" rule by construction, since it's only ever read at
   startup, never hot-reloaded into a running process.
 
   The `src/frontend/lib/daemon-control.ts` wrapper degrades safely (returns a clear
-  "not available" result rather than throwing) when `window.DISKLOCATION_NEXT_PAGE` is
+  "not available" result rather than throwing) when `window.BAYWATCH_PAGE` is
   absent - true of every browser-harness/local-dev setup used throughout this session,
   none of which serve through Unraid's real `.page` pipeline.
 
-  Verified in a browser harness (mocked `fetch` + a mocked `window.DISKLOCATION_NEXT_PAGE`):
+  Verified in a browser harness (mocked `fetch` + a mocked `window.BAYWATCH_PAGE`):
   a daemon-down scenario shows the real message and Start button (not demo data),
   clicking Start calls the mocked PHP endpoint and displays its response; a
   daemon-running scenario shows "Restart daemon" (not "Start") and the port field/Save
@@ -628,7 +628,7 @@ data*.
   hotlinked URL only works for a publicly reachable image - per explicit direction, a
   user should be able to supply their own SVG file directly instead.
   [src/logos.ts](src/logos.ts) stores an uploaded SVG under
-  `/boot/config/plugins/unraid-disklocation-next/logos/<kind>-<id>.svg` (`kind` is
+  `/boot/config/plugins/unraid-baywatch/logos/<kind>-<id>.svg` (`kind` is
   `"skin"` or `"brand"`, `id` is always a value from a fixed, known set - a tray-skin id
   or a `brand.ts` `KNOWN_BRANDS` id, never free-text from the client - so the resulting
   filename can never be a path-traversal vector even though it's built from client input;
@@ -696,7 +696,7 @@ data*.
     `.github/workflows/release.yml` runs this on `ubuntu-latest` (must be Linux x86_64 - the SEA
     binary embeds a copy of whatever `node` builds it, so a macOS/Windows runner would ship a
     binary that can't run on the target Unraid host), pinned to Node 22.x LTS.
-  - `plugin/rc.d/rc.unraid-disklocation-next` now execs the compiled binary directly (no system
+  - `plugin/rc.d/rc.unraid-baywatch` now execs the compiled binary directly (no system
     Node dependency) instead of the placeholder `node dist/index.js` invocation.
   - The `.plg`'s post-install script installs the rc.d script at `/usr/local/etc/rc.d/` -
     matching `daemon-control.php`'s own `$RC_SCRIPT` path (the one the Settings tab's
@@ -723,7 +723,7 @@ data*.
        cache filename (`&name;.txz`) specifically so `removepkg` calls could stay
        version-independent - that choice meant every release registered under the identical
        Slackware package name, so every subsequent install silently no-op'd
-       (`upgradepkg`'s own literal output: `Skipping package unraid-disklocation-next (already
+       (`upgradepkg`'s own literal output: `Skipping package unraid-baywatch (already
        installed)`), even surviving a full `plugin remove` (Unraid's own outer "is this plugin
        version already installed" bookkeeping - read from a persistent
        `/boot/config/plugins/<name>.plg` symlink target our uninstall script never touched, since
@@ -761,7 +761,7 @@ data*.
   daemon's listening port (which genuinely is read once at process start).
 - **Community Apps feed entry - published.** A real install was confirmed working end-to-end on
   the live box (both real bugs above fixed and verified) before doing this, per the deferred plan
-  this replaces. `unraid-disklocation-next.xml` in
+  this replaces. `unraid-baywatch.xml` in
   [joshmans/unraid-tools](https://github.com/joshmans/unraid-tools) - matched the exact format
   this author's own other two live CA entries in that same repo already use (read directly, not
   guessed at): `<Name>`/`<Overview>`/`<PluginURL>`/`<PluginAuthor>` plus the optional
@@ -796,14 +796,14 @@ data*.
 - **Fixed the whole app inlining itself onto the Tools page - real install bug, fixed in two
   passes.** After installing v2026.09.19c, the entire Tray Map UI rendered directly embedded on
   Unraid's Tools page itself, below Update OS/Downgrade OS/etc, instead of behind its own link.
-  Root cause: [DiskLocationNext.page](plugin/pages/DiskLocationNext.page) had `Menu="Tools"`
+  Root cause: [BayWatch.page](plugin/pages/BayWatch.page) had `Menu="Tools"`
   directly on the same file that holds the full Svelte app - Unraid's Tools page concatenates the
   body of every `Menu="Tools"` `.page` file directly inline.
   - First attempt (v2026.09.19d, later corrected): added a separate `Menu="Tools"`, `Type="menu"`,
     no-body stub file and moved the real app to `Menu="Utilities"`, on the theory (modeled on
     `HBAviewer.page`+`HBAviewer_Settings.page`, a real currently-published plugin) that a
     `Type="menu"` stub links through to whatever other page shares its `Title`. Wrong: on the real
-    box this rendered as its own empty section header ("Disk Location Next") on the Tools page,
+    box this rendered as its own empty section header ("Bay Watch") on the Tools page,
     with no link and no content - `Type="menu"` creates a *named group section*, it doesn't link
     to an arbitrarily-named `Menu` elsewhere.
   - Actual fix: matched what the classic `disklocation` plugin's own two files do, more precisely
@@ -812,12 +812,12 @@ data*.
     with `Menu="DiskUtilities"` (the group name with spaces stripped) is listed as a tile inside
     it - confirmed live on the user's own box, where unrelated third-party plugins ("Parity
     Problems Assistant", "Preclear Disk") already populate that same shared "Disk Utilities"
-    group. So: no Tools-page stub file needed at all. `DiskLocationNext.page` now has
+    group. So: no Tools-page stub file needed at all. `BayWatch.page` now has
     `Menu="DiskUtilities"`, `Type="xmenu"`, `Tabs="false"` directly - the same shape as the classic
     plugin's own `disklocationsystem.page` (a real, single-tile, non-tabbed page under that group)
     - and shows up as its own tile alongside the existing Disk Utilities entries, matching the
     user's explicit ask ("it should be under the disk utilities section like the legacy plugin").
-    The now-pointless `DiskLocationNextTools.page` stub was deleted, and the `.plg`'s post-install
+    The now-pointless `BayWatchTools.page` stub was deleted, and the `.plg`'s post-install
     script `rm -f`s that filename explicitly on upgrade - `upgradepkg` only adds/overwrites files
     the new package lists, it doesn't delete ones only an older package shipped, so leftover stub
     files from v2026.09.19d would otherwise linger forever.

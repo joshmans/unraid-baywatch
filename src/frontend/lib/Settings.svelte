@@ -40,8 +40,8 @@
     idRemap: Record<string, string>,
   ) => Promise<{ ok: boolean; error?: string }>;
 
-  const API_BASE = "/plugins/unraid-disklocation-next/api";
-  const DEFAULT_SMART_DB_PATH = "/boot/config/plugins/unraid-disklocation-next/smart-history.db";
+  const API_BASE = "/plugins/unraid-baywatch/api";
+  const DEFAULT_SMART_DB_PATH = "/boot/config/plugins/unraid-baywatch/smart-history.db";
 
   interface ImportPreview {
     available: boolean;

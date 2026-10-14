@@ -15,9 +15,9 @@ import type { BayConfig, BayGroup, Assignments, Orientation } from "./shared/cha
 
 // Not a user-facing setting (this is the stock classic plugin's own fixed
 // install path, nothing to customize) - the env override exists purely for
-// local testing, same convention as this project's other DISKLOCATION_NEXT_*
+// local testing, same convention as this project's other BAYWATCH_*
 // overrides.
-const CLASSIC_DIR = process.env.DISKLOCATION_NEXT_CLASSIC_DIR ?? "/boot/config/plugins/disklocation";
+const CLASSIC_DIR = process.env.BAYWATCH_CLASSIC_DIR ?? "/boot/config/plugins/disklocation";
 const GROUPS_PATH = `${CLASSIC_DIR}/groups.json`;
 const LOCATIONS_PATH = `${CLASSIC_DIR}/locations.json`;
 

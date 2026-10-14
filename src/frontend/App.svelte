@@ -23,7 +23,7 @@
   import { driveFromDisk } from "../shared/derive-drive";
   import { startDaemon as phpStartDaemon } from "./lib/daemon-control";
 
-  const API_BASE = "/plugins/unraid-disklocation-next/api";
+  const API_BASE = "/plugins/unraid-baywatch/api";
 
   type Tab = "map" | "assign" | "identity" | "settings" | "history";
   let activeTab: Tab = "map";

@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 
 // Same config-storage convention as config.ts/layout.ts - survives reboots,
 // unlike anything under /tmp.
-const LOGOS_DIR = process.env.DISKLOCATION_NEXT_LOGOS_DIR ?? "/boot/config/plugins/unraid-disklocation-next/logos";
+const LOGOS_DIR = process.env.BAYWATCH_LOGOS_DIR ?? "/boot/config/plugins/unraid-baywatch/logos";
 
 // Never accepted from free-text user input - kind/id always come from a
 // fixed, known set (a tray-skin id from trayskins.ts's directory listing, or

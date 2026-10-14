@@ -9,23 +9,23 @@ Menu="Dashboard:0"
 // by the mounted dashboard.js bundle below - this file only supplies the
 // static tile chrome, same header markup the classic plugin's own 7.2+
 // dashboard tile uses.
-$pluginname = "Disk Location Next";
+$pluginname = "Bay Watch";
 
 $mytiles[$pluginname]['column1'] =
 <<<EOT
-<tbody id="tblDiskLocationNext" title="_(Disk Location Next)_">
+<tbody id="tblBayWatch" title="_(Bay Watch)_">
 	<tr>
 		<td>
 			<span class="tile-header">
 				<span class="tile-header-left">
 					<i class="icon-disks f32"></i>
 					<div class="section">
-						<h3 class="tile-header-main">_(Disk Location Next)_</h3>
+						<h3 class="tile-header-main">_(Bay Watch)_</h3>
 					</div>
 				</span>
 				<span class="tile-header-right">
 					<span class="tile-header-right-controls">
-						<a href="/Tools/DiskLocationNext" title="_(Go to Disk Location Next)_">
+						<a href="/Tools/BayWatch" title="_(Go to Bay Watch)_">
 							<i class="fa fa-fw fa-cog control"></i>
 						</a>
 					</span>
@@ -35,8 +35,8 @@ $mytiles[$pluginname]['column1'] =
 	</tr>
 	<tr>
 		<td>
-			<div id="unraid-disklocation-next-dashboard"></div>
-			<script src="/plugins/unraid-disklocation-next/app/dist/dashboard.js"></script>
+			<div id="unraid-baywatch-dashboard"></div>
+			<script src="/plugins/unraid-baywatch/app/dist/dashboard.js"></script>
 		</td>
 	</tr>
 </tbody>

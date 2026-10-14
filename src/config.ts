@@ -5,8 +5,8 @@ import { dirname } from "node:path";
 // in the original PHP plugin (unraid-disklocation), for continuity - this
 // service isn't otherwise related to that codebase.
 const CONFIG_PATH =
-  process.env.DISKLOCATION_NEXT_CONFIG ??
-  "/boot/config/plugins/unraid-disklocation-next/settings.json";
+  process.env.BAYWATCH_CONFIG ??
+  "/boot/config/plugins/unraid-baywatch/settings.json";
 
 export interface Settings {
   /** unraid-api API key, generated via `unraid-api apikey --create`. */

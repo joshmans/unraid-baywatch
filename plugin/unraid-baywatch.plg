@@ -1,0 +1,326 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+<!ENTITY name       "unraid-baywatch">
+<!ENTITY author     "Joshua Mans">
+<!ENTITY version    "2026.09.26">
+<!-- Unraid's page router (webGui/template.php) looks pages up by their .page
+     filename via basename($path), not by Menu= - confirmed by reading it on
+     a real box, and matches how hbaviewer (launch="Tools/HBAviewer_Monitor")
+     and unassigned.devices.preclear-next (launch="Tools/Preclear") do it
+     despite both also using Menu="DiskUtilities". The page file here is
+     BayWatch.page, not &name;.page, so launch has to name that. -->
+<!ENTITY launch     "Tools/BayWatch">
+<!ENTITY pluginURL  "https://raw.githubusercontent.com/joshmans/&name;/main/plugin/&name;.plg">
+<!ENTITY packageURL "https://github.com/joshmans/&name;/releases/download/v&version;/&name;-&version;.txz">
+<!ENTITY sha256     "e6fe774d6a92c9941a529999c8059d8b28421cfeedde6f1fbf21a5e3abc8c8eb">
+<!ENTITY pluginLOC  "/boot/config/plugins/&name;">
+<!ENTITY emhttpLOC  "/usr/local/emhttp/plugins/&name;">
+<!ENTITY rcdLOC     "/usr/local/etc/rc.d">
+<!ENTITY supportURL "https://github.com/joshmans/&name;">
+]>
+
+<PLUGIN name="&name;"
+        author="&author;"
+        version="&version;"
+        launch="&launch;"
+        pluginURL="&pluginURL;"
+        icon="server"
+        support="&supportURL;"
+        min="7.2.0"
+>
+
+<!--
+    Copyright 2026, Joshua Mans
+
+    Licensed under the MIT License - see LICENSE.
+
+    This is a clean-room rewrite, not derived from unraid-disklocation's GPLv3
+    codebase - only the tray-map/SMART-history ideas carry over.
+
+    Distribution model (see ROADMAP.md for the full reasoning): a standalone
+    Node.js Single Executable Application binary, built by this repo's own
+    CI release pipeline (.github/workflows/release.yml + build/build.sh) and
+    published as a Slackware .txz GitHub Release asset - the same convention
+    real plugins like Unraid-HBAviewer and unraid-docker-folders use, not the
+    old sibling plugin's live-branch-zip approach (that one has no rc.d
+    daemon to supervise, this one does).
+-->
+
+<CHANGES>
+###2026.09.26
+ - Fix the Chassis layout buttons doing nothing over plain HTTP (#15)
+
+###2026.09.25
+ - Fix the daemon rejecting Unraid's certificate when graphqlUrl is the server's own LAN address (#13)
+ - Add a plugin icon [skip ci] (#12)
+
+###2026.09.22d
+ - Merge pull request #11 from joshmans/fix/release-push-race
+ - Fix the release workflow's push race between concurrent releases
+
+###2026.09.22c
+ - Merge pull request #10 from joshmans/fix/nginx-guard-reproducible-build-launch-url
+ - Merge pull request #9 from joshmans/fix/scope-tls-bypass-to-loopback
+ - Fix launch URL, guard uninstall's nginx reload, make the release .txz reproducible
+ - Scope the unraid-api TLS bypass to loopback requests only
+
+###2026.09.22b
+ - Merge pull request #4 from unraid-ca-review-bot/ca-review/loopback-listener
+ - Bind the daemon to 127.0.0.1
+
+###2026.09.22
+ - Merge pull request #7 from joshmans/fix/package-name-collision
+ - Install the package with installpkg so a colliding derived name cannot skip it
+
+###2026.09.20b
+ - Move the default branch from master to main; the plugin's update URL now points at main (#8)
+
+###2026.09.20
+ - Add a Dashboard widget tile (parity with the classic plugin) (#6)
+
+###2026.09.19f
+ - Add a Fahrenheit/Celsius display setting for SMART history temperature (#5)
+
+###2026.09.19e
+ - Show up as a tile in the Disk Utilities group, not a bare Tools stub (#3)
+
+###2026.09.19d
+ - Stop the app inlining itself onto Unraid's Tools page (#2)
+
+###2026.09.19c
+ - Blink the tray LED for a bad status and real drive activity (#1)
+ - Record the Community Apps feed entry publication in ROADMAP.md
+
+###2026.09.19b
+ - Use a letter suffix for same-day releases, not a numeric one
+ - Document the two real install bugs found and fixed in ROADMAP.md
+
+###2026.09.19-2
+ - Fix upgrades never actually installing new files
+
+###2026.09.19
+ - Fix daemon fetch failures against unraid-api after the SEA rework
+
+###2026.09.18-2
+ - Merge duplicate CHANGES header in the .plg
+
+###2026.09.18
+ - First real installable release. Standalone Node SEA binary daemon, tray/
+   bay drive map with a directory-discovered tray-skin + PCIe-carrier gallery,
+   role/pool/size display, brand-logo system (hotlinked or locally-uploaded
+   SVG), classic-plugin import, SMART history charts, and daemon start/stop/
+   port control from the Settings tab. See ROADMAP.md for the full history.
+ - Add PCIe conversion, role/pool/size display, brand logos, and a real .plg/SEA install pipeline
+ - Add importer for tray assignments from the classic Disk Location plugin
+ - Rename Storage section's save button to Save Location
+ - Rename each Settings save button to reflect its own section
+ - Add a Save button to the LED colors section too
+ - Add per-section Save buttons in Settings, reorder skins list
+ - Color-code daemon status and visually separate Settings sections
+ - Replace demo-data fallback with real daemon status + start/restart/port controls
+ - Fix rc.d restart race condition that silently left the daemon down
+ - Add configurable SMART-history DB location, fix stuck SMART History tab
+ - Fix SMART polling to work against SAS drives, not just ATA/NVMe
+ - Add SMART-history polling, trend graphs tab, and real critical-status detection
+ - Record real-box confirmation of the nginx self-heal fix
+ - Self-heal our nginx registration instead of fighting rc.nginx's regeneration
+ - Record real-hardware confirmation of the Locate LED blink
+ - Add manual "Force (re)detect" button and clarify the no-groups blurb
+ - Defer /disks fetch until a bay/PCIe group exists; add Disk Assignment blurb
+ - Start Settings from an empty layout on unconfigured production installs
+ - Always render LED color Reset button, disabled until an override exists
+ - Show empty-state prompt instead of demo trays on unconfigured installs
+ - Remove redundant "Disk Location" header
+ - Dark-theme-safe styling, tabbed layout, and real nginx findings from a live install
+ - Rename Tools-menu title to "Disk Location Next"
+ - Flash the whole tray tile on a SMART fault, not just the LED dot
+ - Add per-skin LED colors with defaults and a user override
+ - Confirm disks query field shapes against live unraid-api; note LED-color idea
+ - Add live disk-to-bay assignment with a Locate button
+ - Add live PCIe carrier component and a settings UI backed by a real config route
+ - Build the tray-map grid layout
+ - Move tray skins into the repo as contributable SVG assets
+ - Add real GraphQL queries, verified live against a 7.2+ instance
+ - Settle runtime packaging: Node.js + SEA, node:sqlite for storage
+ - Scaffold .plg daemon distribution: rc.d, nginx conf.d proxy, page, server
+ - Rename package to unraid-disklocation-next
+</CHANGES>
+
+<!-- Real, live-confirmed Slackware behavior (2026-09-19, against an actual
+     install): upgradepkg's "install-new" mode means "install ONLY if nothing by
+     this exact package name is already registered in /var/log/packages -
+     otherwise skip unconditionally, regardless of whether the file content
+     actually changed." An earlier version of this file used a fixed,
+     version-less local filename (&name;.txz) specifically so removepkg
+     calls could stay version-independent - that choice broke every future
+     upgrade forever, since every release registered under the identical
+     package name "unraid-baywatch" and upgradepkg silently
+     skipped every subsequent install with "Skipping package
+     unraid-baywatch (already installed)". Confirmed live: the
+     daemon stayed on the very first installed binary through two
+     subsequent releases despite Unraid's own plugin-version bookkeeping
+     correctly showing the newer version each time - the outer "is this
+     plugin version already installed" check and Slackware's own inner
+     package-name check are two entirely separate mechanisms, and only
+     encoding &version; into BOTH the release asset name (already done)
+     AND this local cache filename keeps them in sync. Matches the real,
+     currently-working precedent (unraid-docker-folders) exactly. -->
+<FILE Run="/bin/bash">
+<INLINE>
+<![CDATA[
+# Defensive cleanup before every install/upgrade: remove any package
+# already registered under our name (with or without a version suffix -
+# older installs of this same plugin used a version-less package name),
+# so the upgradepkg step below never again sees "already installed" and
+# silently no-ops. Slackware allows this to run even when nothing matches.
+for pkg in /var/log/packages/unraid-baywatch*; do
+  [ -e "$pkg" ] || continue
+  removepkg "$(basename "$pkg")" || true
+done
+]]>
+</INLINE>
+</FILE>
+
+<!-- installpkg, not upgradepkg: upgradepkg derives a package's name by stripping the last three
+     dash fields (Slackware's name-version-arch-build), and name-version.txz derives to
+     "unraid". Any other installed package that derives to the same name would count as the
+     old version of this one and skip the install as "newer version already installed" (this
+     broke rizowski/unraid-docker-folders#15). The cleanup step above already removes every
+     older copy of this plugin, so no name matching is needed. -->
+<FILE Name="&pluginLOC;/&name;-&version;.txz" Run="installpkg">
+<URL>&packageURL;</URL>
+<SHA256>&sha256;</SHA256>
+</FILE>
+
+<!-- Post-install: seed first-run config (never overwrite existing config -
+     this runs on every upgrade too), fix permissions, register the
+     array-lifecycle event hook, and (re)start the daemon. Wrapped in CDATA,
+     not hand-escaped &amp;&amp;/&lt; - a real Unraid plugin (unraid-docker-folders)
+     documents getting this wrong as a silent, whole-plugin-breaking XML
+     parse failure.
+
+     IMPORTANT: entity references (&name; etc.) are NOT expanded inside a
+     CDATA section - that's the whole point of CDATA (literal text, no
+     markup/entity recognition at all). So this script hardcodes its own
+     path literals via plain bash variables up top instead of relying on
+     substitution - keep these in sync with the DOCTYPE entities above by
+     hand if the plugin's name/paths ever change. -->
+<FILE Run="/bin/bash">
+<INLINE>
+<![CDATA[
+set -e
+
+NAME="unraid-baywatch"
+PLUGIN_LOC="/boot/config/plugins/${NAME}"
+EMHTTP_LOC="/usr/local/emhttp/plugins/${NAME}"
+RCD_LOC="/usr/local/etc/rc.d"
+
+mkdir -p "$PLUGIN_LOC"
+
+# One-time move from the old name. This plugin was "Disk Location Next"
+# (unraid-disklocation-next) until it was renamed to Bay Watch. Copy the
+# user's data across, stop the old daemon, and take the old plugin out. The
+# old folder is never deleted: it also holds large old downloaded packages,
+# and the user can remove it once they have checked the copy.
+OLD_NAME="unraid-disklocation-next"
+OLD_LOC="/boot/config/plugins/${OLD_NAME}"
+if [ -d "$OLD_LOC" ] && [ ! -e "$PLUGIN_LOC/.migrated-from-${OLD_NAME}" ]; then
+  echo "Moving settings from ${OLD_NAME} ..."
+  [ -x "$RCD_LOC/rc.${OLD_NAME}" ] && "$RCD_LOC/rc.${OLD_NAME}" stop || true
+  # Only the user's data. Never copy over something that already exists here.
+  for f in settings.json layout.json smart-history.db smart-history.db-wal smart-history.db-shm; do
+    [ -e "$OLD_LOC/$f" ] && [ ! -e "$PLUGIN_LOC/$f" ] && cp -p "$OLD_LOC/$f" "$PLUGIN_LOC/$f"
+  done
+  [ -d "$OLD_LOC/logos" ] && [ ! -e "$PLUGIN_LOC/logos" ] && cp -pR "$OLD_LOC/logos" "$PLUGIN_LOC/logos"
+  # Take the old plugin out. Its remove script stops the daemon, removes its
+  # package and its nginx include; it leaves the old folder alone.
+  if [ -e "/var/log/plugins/${OLD_NAME}.plg" ]; then
+    plugin remove "${OLD_NAME}.plg" || true
+  fi
+  touch "$PLUGIN_LOC/.migrated-from-${OLD_NAME}"
+  echo "Copied from ${OLD_LOC}. That folder was left in place; delete it once you have checked the copy."
+fi
+
+# Cleanup from a fixed bug: installs from before the local cache filename
+# carried a version stashed the download at a fixed, version-less path -
+# harmless leftover cruft now that installs use a versioned filename, but
+# no reason to leave it sitting on the flash boot drive.
+rm -f "$PLUGIN_LOC/$NAME.txz"
+
+# Cleanup from a fixed bug: v2026.09.19d shipped a Menu="Tools" stub page
+# meant to link to the real app elsewhere on the Tools page - it never
+# actually got that link and left an empty header there instead. The real
+# app page no longer lives under Tools at all (moved to the Disk
+# Utilities group), so the stub is now dead weight - upgradepkg only adds/
+# overwrites files listed in the new package, it doesn't remove ones only
+# the old package shipped, so this has to be deleted explicitly.
+rm -f "$EMHTTP_LOC/BayWatchTools.page"
+
+if [ ! -f "$PLUGIN_LOC/layout.json" ]; then
+  cat > "$PLUGIN_LOC/layout.json" <<'JSON'
+{"layout":{"id":"custom","name":"My chassis","groups":[]},"logos":{}}
+JSON
+fi
+
+chmod 755 "$RCD_LOC/rc.$NAME"
+chmod 755 "$EMHTTP_LOC/app/bin/$NAME"
+
+mkdir -p "$EMHTTP_LOC/event"
+cat > "$EMHTTP_LOC/event/started" <<EVENT
+#!/bin/bash
+# Generated by ${NAME}'s .plg - re-registered on every install/upgrade.
+# Brings the daemon back after an array-lifecycle event, the same
+# rc.d-supervised-by-event-hook convention other plugin daemons use.
+$RCD_LOC/rc.$NAME start
+EVENT
+chmod 755 "$EMHTTP_LOC/event/started"
+
+# Covers both a fresh install ("just start") and an upgrade-in-place
+# ("stop the old binary, start the new one") - the same always-restart
+# convention daemon-control.php's own "start" action already uses.
+"$RCD_LOC/rc.$NAME" restart
+
+echo "$NAME installed."
+]]>
+</INLINE>
+</FILE>
+
+<!-- Uninstall: stop the daemon, remove the package and everything this
+     install script added outside it, undo the nginx include this plugin's
+     own daemon self-heals into locations.conf at runtime (best-effort - a
+     stopped/removed plugin has nothing left to heal it back), but leave
+     PLUGIN_LOC (layout.json, logos/, the SMART-history database) alone -
+     every real precedent checked for this project explicitly does not
+     delete user config/data on remove. Same CDATA/no-entity-expansion
+     caveat as the install script above - hardcoded bash variables, not
+     entity references. -->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+<![CDATA[
+NAME="unraid-baywatch"
+PLUGIN_LOC="/boot/config/plugins/${NAME}"
+EMHTTP_LOC="/usr/local/emhttp/plugins/${NAME}"
+RCD_LOC="/usr/local/etc/rc.d"
+
+"$RCD_LOC/rc.$NAME" stop || true
+
+for pkg in /var/log/packages/unraid-baywatch*; do
+  [ -e "$pkg" ] || continue
+  removepkg "$(basename "$pkg")" || true
+done
+
+rm -rf "$EMHTTP_LOC"
+
+sed -i "\|include ${PLUGIN_LOC}/nginx/${NAME}.conf;|d" /etc/nginx/conf.d/locations.conf 2>/dev/null || true
+# Same rule the daemon's own validatedReload() follows (src/nginx.ts): never
+# reload on a config nginx itself would reject, a bad reload can take the
+# whole webGUI down, not just this plugin's line.
+nginx -t 2>/dev/null && nginx -s reload 2>/dev/null || true
+
+echo "$NAME removed. $PLUGIN_LOC (config, layout, logos, SMART history) was left in place."
+]]>
+</INLINE>
+</FILE>
+
+</PLUGIN>

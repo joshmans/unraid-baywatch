@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lifecycle script for the unraid-disklocation-next daemon.
+# Lifecycle script for the unraid-baywatch daemon.
 #
 # Installed to /usr/local/etc/rc.d/ (NOT /etc/rc.d/, which Unraid owns as a
 # runtime symlink - packaging into it can break nginx/php-fpm/samba/docker).
@@ -26,10 +26,10 @@
 # the Settings tab, but only while the daemon isn't running (see
 # ../daemon-control.php's set-port action).
 
-PIDFILE="/var/run/unraid-disklocation-next.pid"
-LAYOUT_PATH="/boot/config/plugins/unraid-disklocation-next/layout.json"
-APP_BIN="/usr/local/emhttp/plugins/unraid-disklocation-next/app/bin/unraid-disklocation-next"
-LOGFILE="/var/log/unraid-disklocation-next.log"
+PIDFILE="/var/run/unraid-baywatch.pid"
+LAYOUT_PATH="/boot/config/plugins/unraid-baywatch/layout.json"
+APP_BIN="/usr/local/emhttp/plugins/unraid-baywatch/app/bin/unraid-baywatch"
+LOGFILE="/var/log/unraid-baywatch.log"
 
 running() {
   [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null
@@ -37,7 +37,7 @@ running() {
 
 start() {
   if running; then
-    echo "unraid-disklocation-next already running (pid $(cat "$PIDFILE"))"
+    echo "unraid-baywatch already running (pid $(cat "$PIDFILE"))"
     return 0
   fi
   # User-configurable via the Settings tab's port field (daemon-control.php's
@@ -55,9 +55,9 @@ start() {
   # already died, silently leaving nothing running.
   sleep 1
   if kill -0 "$pid" 2>/dev/null; then
-    echo "unraid-disklocation-next started (pid $pid)"
+    echo "unraid-baywatch started (pid $pid)"
   else
-    echo "unraid-disklocation-next FAILED to start - see $LOGFILE"
+    echo "unraid-baywatch FAILED to start - see $LOGFILE"
     rm -f "$PIDFILE"
     return 1
   fi
@@ -65,7 +65,7 @@ start() {
 
 stop() {
   if ! running; then
-    echo "unraid-disklocation-next already stopped"
+    echo "unraid-baywatch already stopped"
     rm -f "$PIDFILE"
     return 0
   fi
@@ -81,12 +81,12 @@ stop() {
     sleep 0.3
   done
   if kill -0 "$pid" 2>/dev/null; then
-    echo "unraid-disklocation-next did not stop gracefully after 6s, killing"
+    echo "unraid-baywatch did not stop gracefully after 6s, killing"
     kill -9 "$pid" 2>/dev/null
     sleep 0.3
   fi
   rm -f "$PIDFILE"
-  echo "unraid-disklocation-next stopped"
+  echo "unraid-baywatch stopped"
 }
 
 case "$1" in
