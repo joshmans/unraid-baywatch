@@ -116,6 +116,23 @@ export function getArrayState(): Map<string, ArrayStateEntry> {
   return result;
 }
 
+/**
+ * Bare device nodes (e.g. "sda") Unraid itself currently records as spun
+ * down (`spundown="1"` in disks.ini/devs.ini). Unraid is the one that spins
+ * these disks down, so this is its own authoritative state, and reading it is
+ * a plain file read that never touches a drive.
+ */
+export function getSpunDownDevices(): Set<string> {
+  const spunDown = new Set<string>();
+  for (const path of [DISKS_INI_PATH, DEVS_INI_PATH]) {
+    if (!existsSync(path)) continue;
+    for (const fields of Object.values(parseSectionedIni(readFileSync(path, "utf-8")))) {
+      if (fields.device && fields.spundown === "1") spunDown.add(fields.device);
+    }
+  }
+  return spunDown;
+}
+
 /** Attaches role/poolName/sizeBytes to each disk from getArrayState(), matched by bare device node (disk.device from unraid-api always carries a /dev/ prefix; disks.ini/devs.ini never do). A disk this plugin can't place in either file (rare - e.g. read right as the array is starting) is left as "unassigned" with no sizeBytes rather than failing the whole /disks response. */
 export function enrichWithArrayState(disks: DiskResult[]): DiskResult[] {
   const state = getArrayState();
