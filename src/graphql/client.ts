@@ -4,7 +4,7 @@ import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { networkInterfaces } from "node:os";
 import type { Settings } from "../config.js";
-import { ARRAY_QUERY, DISKS_QUERY, type ArrayResult, type DiskResult } from "./queries.js";
+import { ARRAY_QUERY, type ArrayResult } from "./queries.js";
 
 // unraid-api's own GraphQL endpoint is served over HTTPS with Unraid's
 // self-signed certificate, which never verifies against the system trust
@@ -118,11 +118,6 @@ export async function queryUnraidApi<T>(
     throw new Error(`unraid-api returned errors: ${JSON.stringify(errors)}`);
   }
   return data as T;
-}
-
-export async function getDisks(settings: Settings): Promise<DiskResult[]> {
-  const { disks } = await queryUnraidApi<{ disks: DiskResult[] }>(settings, DISKS_QUERY);
-  return disks;
 }
 
 export async function getArray(settings: Settings): Promise<ArrayResult> {

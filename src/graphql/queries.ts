@@ -3,24 +3,6 @@
 // Field shapes here are real, not guessed - see ROADMAP.md for what this
 // confirmed and what it ruled out.
 
-export const DISKS_QUERY = `
-  query Disks {
-    disks {
-      id
-      device
-      name
-      type
-      vendor
-      size
-      serialNum
-      interfaceType
-      temperature
-      smartStatus
-      isSpinning
-    }
-  }
-`;
-
 export interface DiskResult {
   id: string;
   device: string;
@@ -47,7 +29,7 @@ export interface DiskResult {
    * Not part of this GraphQL query - attached server-side by
    * array-state.ts's enrichWithArrayState() before /disks responds, since
    * unraid-api's schema has no per-disk pool-name field (confirmed 2026-09).
-   * Absent on a DiskResult straight from getDisks() before enrichment.
+   * Absent on a DiskResult straight from listLocalDisks() before enrichment.
    */
   role?: import("../shared/chassis-types.js").DriveRole;
   poolName?: string;

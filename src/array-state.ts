@@ -116,21 +116,31 @@ export function getArrayState(): Map<string, ArrayStateEntry> {
   return result;
 }
 
+interface DeviceRuntimeState {
+  spundown: boolean;
+  /** Unraid's own last temperature reading in C; null when spun down ("*") or absent. */
+  tempC: number | null;
+  /** Unraid's own array/pool status (e.g. "DISK_OK"); undefined for unassigned devices. */
+  status?: string;
+}
+
 /**
- * Bare device nodes (e.g. "sda") Unraid itself currently records as spun
- * down (`spundown="1"` in disks.ini/devs.ini). Unraid is the one that spins
- * these disks down, so this is its own authoritative state, and reading it is
- * a plain file read that never touches a drive.
+ * Per-device state Unraid itself records in disks.ini/devs.ini (keyed by bare
+ * device node, e.g. "sda"). Unraid is the one that spins these disks down and
+ * monitors their temperature, so this is its authoritative view, and reading
+ * it is a plain file read that never touches a drive.
  */
-export function getSpunDownDevices(): Set<string> {
-  const spunDown = new Set<string>();
+export function getDeviceRuntimeState(): Map<string, DeviceRuntimeState> {
+  const state = new Map<string, DeviceRuntimeState>();
   for (const path of [DISKS_INI_PATH, DEVS_INI_PATH]) {
     if (!existsSync(path)) continue;
     for (const fields of Object.values(parseSectionedIni(readFileSync(path, "utf-8")))) {
-      if (fields.device && fields.spundown === "1") spunDown.add(fields.device);
+      if (!fields.device || state.has(fields.device)) continue;
+      const tempC = fields.temp !== undefined && fields.temp !== "" && !isNaN(Number(fields.temp)) ? Number(fields.temp) : null;
+      state.set(fields.device, { spundown: fields.spundown === "1", tempC, status: fields.status });
     }
   }
-  return spunDown;
+  return state;
 }
 
 /** Attaches role/poolName/sizeBytes to each disk from getArrayState(), matched by bare device node (disk.device from unraid-api always carries a /dev/ prefix; disks.ini/devs.ini never do). A disk this plugin can't place in either file (rare - e.g. read right as the array is starting) is left as "unassigned" with no sizeBytes rather than failing the whole /disks response. */

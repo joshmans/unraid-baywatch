@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { loadSettings, saveSettings } from "./config.js";
 import { loadLayoutConfig, saveLayoutConfig } from "./layout.js";
-import { getDisks } from "./graphql/client.js";
+import { listLocalDisks } from "./local-disks.js";
 import { startLocate, stopLocate, stopAllLocate, activeLocateDevices } from "./locate.js";
 import { startNginxSelfHeal } from "./nginx.js";
 import { startSmartHistoryPolling, getLatestStatuses, getHistory } from "./smart-history.js";
@@ -104,7 +104,7 @@ const server = createServer(async (req, res) => {
       return;
     }
     try {
-      const disks = await getDisks(settings);
+      const disks = await listLocalDisks();
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify(enrichWithArrayState(disks)));
     } catch (err) {
