@@ -157,8 +157,10 @@ data*.
   never needs a migration). `node:sqlite` needs Node 22.5+ - confirmed working without any
   flag on the real box's Node v22.18.0 by actually running
   `node -e "require('node:sqlite')"` there rather than trusting version-range docs, so
-  `package.json`'s `engines` was bumped from `>=20` to `>=22.5`. `pollAllDisks()` calls the
-  existing `getDisks()`, then for every disk runs `smartctl -n standby -H -A -j <device>`
+  `package.json`'s `engines` was bumped from `>=20` to `>=22.5`. `pollAllDisks()` lists disks with
+  `lsblk` (NOT unraid-api's `disks` query, whose stock resolver runs an unguarded
+  `smartctl -a -j` on every disk via systeminformation and wakes sleeping drives - issue #18),
+  skips any disk Unraid's own `disks.ini`/`devs.ini` marks `spundown="1"`, then for every other disk runs `smartctl -n standby -H -A -j <device>`
   (reusing `locate.ts`'s `normalizeDevice()` for the same injection-safe validation) and
   derives `ok`/`warn`/`critical` from `smart_status.passed`, ATA attributes 5/197/198
   (Reallocated/Pending/Offline-Uncorrectable), NVMe's

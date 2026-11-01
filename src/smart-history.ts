@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 import { execFile } from "node:child_process";
 import { loadSettings } from "./config.js";
 import { loadLayoutConfig } from "./layout.js";
-import { getDisks } from "./graphql/client.js";
+import { getSpunDownDevices } from "./array-state.js";
 import { normalizeDevice } from "./locate.js";
 import type { DriveStatus } from "./shared/chassis-types.js";
 
@@ -180,6 +180,31 @@ function pruneOldSamples(): void {
   getDb().prepare("DELETE FROM smart_samples WHERE ts < ?").run(cutoff);
 }
 
+const LSBLK_BIN = process.env.BAYWATCH_LSBLK_BIN ?? "lsblk";
+const PHYSICAL_DISK_NAME = /^(sd[a-z]+|hd[a-z]+|nvme\d+n\d+|mmcblk\d+)$/;
+
+/**
+ * Physical disks and their serials, from lsblk (which reads the udev
+ * database, never the drive itself). This deliberately does NOT use
+ * unraid-api's `disks` query: on a stock unraid-api that resolver calls
+ * systeminformation's diskLayout(), which runs `smartctl -a -j` on every disk
+ * with no standby guard and so spins up every sleeping drive on every poll
+ * (reported in issue #18). lsblk's SERIAL is the same value unraid-api
+ * reports as serialNum, so samples stay keyed the same way.
+ */
+async function listPollableDisks(): Promise<{ device: string; serial: string }[]> {
+  const stdout = await new Promise<string>((resolve) => {
+    execFile(LSBLK_BIN, ["-d", "-P", "-o", "NAME,SERIAL"], { maxBuffer: 1024 * 1024 }, (_err, out) => resolve(out ?? ""));
+  });
+  const disks: { device: string; serial: string }[] = [];
+  for (const line of stdout.split("\n")) {
+    const name = line.match(/NAME="([^"]*)"/)?.[1];
+    const serial = line.match(/SERIAL="([^"]*)"/)?.[1]?.trim();
+    if (name && serial && PHYSICAL_DISK_NAME.test(name)) disks.push({ device: `/dev/${name}`, serial });
+  }
+  return disks;
+}
+
 let loggedUnconfigured = false;
 
 export async function pollAllDisks(): Promise<void> {
@@ -193,20 +218,17 @@ export async function pollAllDisks(): Promise<void> {
   }
   loggedUnconfigured = false;
 
-  let disks;
-  try {
-    disks = await getDisks(settings);
-  } catch (err) {
-    console.error(`[smart-history] couldn't fetch disks: ${err}`);
-    return;
-  }
+  const disks = await listPollableDisks();
+  const spunDown = getSpunDownDevices();
 
   for (const disk of disks) {
-    // No isSpinning pre-filter here (see pollDevice's comment) - `-n standby`
-    // is what actually protects a genuinely sleeping drive from being woken.
+    // Unraid's own spundown flag is checked first so a drive it has put to
+    // sleep is never sent a command at all; `-n standby` in pollDevice stays
+    // as the second guard for drives Unraid doesn't manage the sleep of.
+    if (spunDown.has(disk.device.replace(/^\/dev\//, ""))) continue;
     try {
       const sample = await pollDevice(disk.device);
-      if (sample) insertSample(disk.serialNum, sample);
+      if (sample) insertSample(disk.serial, sample);
     } catch (err) {
       console.error(`[smart-history] poll failed for ${disk.device}: ${err}`);
     }
