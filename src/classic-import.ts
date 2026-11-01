@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { loadSettings } from "./config.js";
-import { getDisks } from "./graphql/client.js";
+import { listLocalDisks } from "./local-disks.js";
 import { normalizeDevice } from "./locate.js";
 import { runSmartctl } from "./smart-history.js";
 import type { BayConfig, BayGroup, Assignments, Orientation } from "./shared/chassis-types.js";
@@ -114,7 +114,7 @@ async function buildHashToSerialMap(): Promise<Map<string, string>> {
   if (!settings) return map;
   let disks;
   try {
-    disks = await getDisks(settings);
+    disks = await listLocalDisks();
   } catch {
     return map;
   }
