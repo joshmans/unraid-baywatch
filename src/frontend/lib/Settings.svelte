@@ -252,6 +252,15 @@
     layout.groups = [...layout.groups, group];
   }
 
+  // Group order is what both the Tray Map and the Dashboard tile lay out in.
+  function moveGroup(index: number, delta: number) {
+    const target = index + delta;
+    if (target < 0 || target >= layout.groups.length) return;
+    const groups = [...layout.groups];
+    [groups[index], groups[target]] = [groups[target], groups[index]];
+    layout.groups = groups;
+  }
+
   function removeGroup(id: string) {
     layout.groups = layout.groups.filter((g) => g.id !== id);
   }
@@ -432,10 +441,12 @@
     </label>
   </div>
   {#if convertMessage}<p class="hint err">{convertMessage}</p>{/if}
-  {#each layout.groups as group (group.id)}
+  {#each layout.groups as group, i (group.id)}
     <div class="group-editor">
       <div class="group-header">
         <input type="text" bind:value={group.label} placeholder="Group label" />
+        <button type="button" title="Move up" aria-label="Move group up" on:click={() => moveGroup(i, -1)} disabled={i === 0}>&uarr;</button>
+        <button type="button" title="Move down" aria-label="Move group down" on:click={() => moveGroup(i, 1)} disabled={i === layout.groups.length - 1}>&darr;</button>
         {#if group.kind === "bays"}
           <button type="button" on:click={() => onConvertToPcieClick(group)} disabled={convertingGroupId === group.id}>
             {convertingGroupId === group.id ? "Converting..." : "Convert to PCIe group"}
