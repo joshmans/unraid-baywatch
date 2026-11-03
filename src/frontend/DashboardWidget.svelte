@@ -129,7 +129,9 @@
     return [col0, col1];
   }
 
-  $: columns = layout ? packColumns(layout.groups) : [[], []];
+  // Opt-in alternative for wide tiles: one column per group, so e.g. a short
+  // "system" group sits beside two tall enclosures rather than under one.
+  $: columns = !layout ? [[], []] : layout.dashboardSideBySide ? layout.groups.map((g) => [g]) : packColumns(layout.groups);
 
   // These take drives/disks/showRoleColor/showRoleIcon as explicit params,
   // not just closed-over state, purely so the *markup* expressions below
@@ -161,7 +163,7 @@
     <p class="status">Loading...</p>
   {:else}
     <p class="count">{occupied} of {totalSlots} drives assigned.</p>
-    <div class="groups">
+    <div class="groups" class:side-by-side={layout.dashboardSideBySide}>
       {#each columns as col, i (i)}
         {#if col.length}
           <div class="column">
@@ -238,6 +240,9 @@
     flex-direction: row;
     align-items: flex-start;
     gap: 10px;
+  }
+  .groups.side-by-side {
+    flex-wrap: wrap;
   }
   .column {
     display: flex;

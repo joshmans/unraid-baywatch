@@ -426,6 +426,10 @@
       <input type="checkbox" bind:checked={showRoleIcon} />
       Icon badge for role (hover for pool name on cache disks)
     </label>
+    <label class="checkbox-row">
+      <input type="checkbox" bind:checked={layout.dashboardSideBySide} />
+      Dashboard tile: show groups side by side (wraps when out of room)
+    </label>
   </div>
   {#if convertMessage}<p class="hint err">{convertMessage}</p>{/if}
   {#each layout.groups as group (group.id)}
