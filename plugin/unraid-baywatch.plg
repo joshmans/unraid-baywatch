@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name       "unraid-baywatch">
 <!ENTITY author     "Joshua Mans">
-<!ENTITY version    "2026.11.01b">
+<!ENTITY version    "2026.11.05">
 <!-- Unraid's page router (webGui/template.php) looks pages up by their .page
      filename via basename($path), not by Menu= - confirmed by reading it on
      a real box, and matches how hbaviewer (launch="Tools/HBAviewer_Monitor")
@@ -13,7 +13,7 @@
 <!ENTITY launch     "Tools/BayWatch">
 <!ENTITY pluginURL  "https://raw.githubusercontent.com/joshmans/&name;/main/plugin/&name;.plg">
 <!ENTITY packageURL "https://github.com/joshmans/&name;/releases/download/v&version;/&name;-&version;.txz">
-<!ENTITY sha256     "71e5fe32629a24c37bcc5171ba16aad7109bdcb3c864222288523f7bfe24a8ea">
+<!ENTITY sha256     "133117201c019a3a98aad9c5c17ff309253630cbd1aaccc62e35187cd291ba8e">
 <!ENTITY pluginLOC  "/boot/config/plugins/&name;">
 <!ENTITY emhttpLOC  "/usr/local/emhttp/plugins/&name;">
 <!ENTITY rcdLOC     "/usr/local/etc/rc.d">
@@ -48,6 +48,9 @@
 -->
 
 <CHANGES>
+###2026.11.05
+ - Dashboard tile: side-by-side groups option, and group reordering (#21)
+
 ###2026.11.01b
  - Merge pull request #20 from joshmans/fix/disks-endpoint-no-wake
  - Serve /disks and the classic import without unraid-api's disks query
