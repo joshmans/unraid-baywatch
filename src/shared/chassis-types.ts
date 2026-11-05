@@ -83,6 +83,8 @@ export interface ChassisLayout {
   id: string;
   name: string;
   groups: Group[];
+  /** Dashboard tile only: give every group its own column, in source order, wrapping onto a new line when the tile runs out of width - instead of the default height-balanced two columns. Absent = off. */
+  dashboardSideBySide?: boolean;
 }
 
 /** Hotlinked manufacturer logo URL per tray-skin id - kept separate from the skins themselves so a skin PR never needs to carry a logo (see assets/tray-skins/README.md). */
