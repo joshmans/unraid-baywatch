@@ -23,12 +23,13 @@ export const KNOWN_BRANDS: BrandMeta[] = [
   { id: "intel", name: "Intel" },
   { id: "kioxia", name: "Kioxia" },
   { id: "silicon-power", name: "Silicon Power" },
+  { id: "ibm", name: "IBM" },
 ];
 
 const BRAND_PATTERNS: [RegExp, string][] = [
-  [/seagate|barracuda|constellation|exos|ironwolf|^st\d/i, "seagate"],
+  [/seagate|barracuda|constellation|exos|ironwolf|\bst\d{3,}/i, "seagate"],
   [/western digital|\bwdc?\b/i, "wd"],
-  [/hgst|hitachi|^huh|^h0h/i, "hgst"],
+  [/hgst|hitachi|\bhuh\d|\bh0h/i, "hgst"],
   [/toshiba/i, "toshiba"],
   [/samsung/i, "samsung"],
   [/micron|crucial|mtfd/i, "micron"],
@@ -37,13 +38,22 @@ const BRAND_PATTERNS: [RegExp, string][] = [
   [/\bintel\b/i, "intel"],
   [/kioxia/i, "kioxia"],
   [/spcc|silicon power/i, "silicon-power"],
+  [/\bibm/i, "ibm"],
 ];
 
 /** Returns a KNOWN_BRANDS id, or undefined if neither string matches anything recognized (e.g. a generic "ATA"/"SATA SSD" vendor string that carries no real brand info). */
 export function detectBrand(vendor: string | undefined, model: string | undefined): string | undefined {
-  const combined = `${vendor ?? ""} ${model ?? ""}`;
-  for (const [pattern, id] of BRAND_PATTERNS) {
-    if (pattern.test(combined)) return id;
+  const v = (vendor ?? "").trim();
+  const m = (model ?? "").trim();
+  // The vendor string alone first (an explicit vendor such as "IBM-207x" beats whatever the OEM model
+  // prefix says), then the model alone, then both together. Matching only the joined string broke the
+  // start-anchored model patterns (ST..., HUH...): SATA drives have an empty vendor, so the joined
+  // string began with a space and those patterns never matched.
+  for (const text of [v, m, `${v} ${m}`.trim()]) {
+    if (!text) continue;
+    for (const [pattern, id] of BRAND_PATTERNS) {
+      if (pattern.test(text)) return id;
+    }
   }
   return undefined;
 }
