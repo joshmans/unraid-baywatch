@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Skin } from "./trayskins";
+  import { skinViewBox, type Skin } from "./trayskins";
   import type { DriveRole } from "./chassis";
   import { driveIconColors, driveIconSvg, driveIconMeta } from "./driveicons";
   import { statusColor } from "./status";
@@ -32,7 +32,7 @@
    */
   export let flashSeq = 0;
 
-  $: vb = orientation === "horizontal" ? { w: 220, h: 64 } : { w: 76, h: 190 };
+  $: vb = skinViewBox(skin, orientation);
   $: svgMarkup = orientation === "horizontal" ? skin.svg.horizontal : skin.svg.vertical;
   $: o = skin.overlays[orientation];
   $: resolvedLedColor = ledColor ?? statusColor(status);
@@ -41,6 +41,13 @@
   $: roleColor = role ? ROLE_COLORS[role] : "transparent";
   $: sizeText = formatSize(sizeBytes);
   $: modelText = !hasBrandLogo ? [vendor, model].filter(Boolean).join(" ") : "";
+  /** Tall narrow trays draw the serial and model rotated, in two columns (see SkinOverlayAnchor.rotate). */
+  $: rotated = !!o.label.rotate;
+  /** Where the rotated text columns stop: the logo anchor's top when it sits below them, else the bottom edge. */
+  $: rotatedBottom = Math.min(vb.h, (o.logo.y ?? vb.h) - 4);
+  $: rotatedHeight = Math.max(0, rotatedBottom - (o.label.y ?? 0));
+  /** Distance between the two rotated columns, in viewBox units (the 8px serial plus a little air). */
+  const ROTATED_COLUMN_GAP = 11;
 
   function pct(value: number, total: number): string {
     return `${(value / total) * 100}%`;
@@ -81,25 +88,44 @@
     {/if}
   </div>
 
-  <div
-    class="label"
-    style="left:{pct(o.label.x ?? 0, vb.w)};top:{pct((o.label.y ?? 0) - 6, vb.h)};color:{o.label.color ?? '#242420'}"
-  >
-    {label}
-  </div>
-
-  {#if modelText}
+  {#if rotated}
     <div
-      class="model-text"
-      style="left:{pct(o.label.x ?? 0, vb.w)};top:{pct((o.label.y ?? 0) + 10, vb.h)};max-width:{pct(vb.w - (o.label.x ?? 0) - 4, vb.w)};color:{o.label.color ?? '#242420'}"
-      title={modelText}
+      class="label rotated"
+      style="left:{pct(o.label.x ?? 0, vb.w)};top:{pct(o.label.y ?? 0, vb.h)};height:{pct(rotatedHeight, vb.h)};color:{o.label.color ?? '#242420'}"
+      title={label}
     >
-      {modelText}
+      {label}
     </div>
+    {#if modelText}
+      <div
+        class="model-text rotated"
+        style="left:{pct((o.label.x ?? 0) + ROTATED_COLUMN_GAP, vb.w)};top:{pct(o.label.y ?? 0, vb.h)};height:{pct(rotatedHeight, vb.h)};color:{o.label.color ?? '#242420'}"
+        title={modelText}
+      >
+        {modelText}
+      </div>
+    {/if}
+  {:else}
+    <div
+      class="label"
+      style="left:{pct(o.label.x ?? 0, vb.w)};top:{pct((o.label.y ?? 0) - 6, vb.h)};color:{o.label.color ?? '#242420'}"
+    >
+      {label}
+    </div>
+
+    {#if modelText}
+      <div
+        class="model-text"
+        style="left:{pct(o.label.x ?? 0, vb.w)};top:{pct((o.label.y ?? 0) + 10, vb.h)};max-width:{pct(vb.w - (o.label.x ?? 0) - 4, vb.w)};color:{o.label.color ?? '#242420'}"
+        title={modelText}
+      >
+        {modelText}
+      </div>
+    {/if}
   {/if}
 
   {#if (showRoleIcon && role) || sizeText}
-    <div class="corner-info">
+    <div class="corner-info" class:stacked={rotated} style={rotated ? `color:${o.label.color ?? "#242420"}` : undefined}>
       {#if showRoleIcon && role}
         <div class="role-badge" style="background:{roleBadgeBackground(role)}" title={roleLabel(role, poolName)}>
           {ROLE_BADGE_LETTER[role]}
@@ -151,6 +177,18 @@
     flex: 0 0 auto;
     font: 8px ui-monospace, "SFMono-Regular", Menlo, monospace;
     color: rgba(36, 36, 32, 0.65);
+  }
+  /* Rotated (tall, narrow) trays have no room beside each other for the badge and size. */
+  .corner-info.stacked {
+    right: 50%;
+    transform: translateX(50%);
+    flex-direction: column;
+    gap: 1px;
+  }
+  .corner-info.stacked .size-text {
+    white-space: nowrap;
+    color: inherit;
+    opacity: 0.8;
   }
   .tray-skin.fault {
     animation: tray-fault-flash 1s ease-in-out infinite;
@@ -261,6 +299,15 @@
     position: absolute;
     font: 8px ui-monospace, "SFMono-Regular", Menlo, monospace;
     white-space: nowrap;
+  }
+  /* Reads bottom-to-top: the box is turned 180 degrees, so the text starts at the bottom of its
+     height and any overflow is cut off (with an ellipsis) at the top. */
+  .label.rotated,
+  .model-text.rotated {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .model-text {
     position: absolute;
