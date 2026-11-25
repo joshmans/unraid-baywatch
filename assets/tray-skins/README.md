@@ -68,6 +68,17 @@ skin (see existing skins for the wording pattern).
   `color` should be chosen to stay legible against your skin's body color
   (light text for a dark body, dark text for a light one).
 
+Skins for tall, narrow trays (a 3.5" drive mounted on edge, as in a shelf that holds its drives
+upright side by side) can go beyond the default 220x64 / 76x190 shapes:
+
+- `viewBox` (optional, top level of `meta.json`): `{ "horizontal": { "w": 220, "h": 64 }, "vertical":
+  { "w": 42, "h": 220 } }`. Give the size your svg's `viewBox` attribute uses; any orientation left out
+  keeps the default size. The tray is drawn at this aspect ratio.
+- `rotate: true` on the `label` anchor: the serial and the make/model text are drawn rotated, reading
+  bottom-to-top, in two columns starting at the anchor's `x`/`y` instead of as horizontal lines. The
+  columns stop 4 units above the `logo` anchor (or at the bottom edge if the logo is not below them),
+  and the size/role badge is stacked at the bottom centre. See `vertical-35` for an example.
+
 Coordinates are in the SVG's own viewBox units. Keep all four anchors clear
 of your latch/handle art and of each other - `icon` and `label` typically sit
 in the corners of whatever part of the tray isn't the latch.

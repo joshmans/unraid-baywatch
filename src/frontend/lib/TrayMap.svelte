@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ChassisLayout, BayDrive, LogoConfig, LedColorConfig, BrandLogoConfig, ManufacturerOverrides } from "./chassis";
   import { DEFAULT_PCIE_CARD_WIDTH_PX } from "./chassis";
-  import { skins } from "./trayskins";
+  import { skins, skinViewBox } from "./trayskins";
   import TraySkin from "./TraySkin.svelte";
   import PcieCarrier from "./PcieCarrier.svelte";
   import { resolveLedColor } from "./status";
@@ -66,7 +66,7 @@
               {:else}
                 <div
                   class="empty"
-                  style="aspect-ratio:{bay.orientation === 'horizontal' ? '220/64' : '76/190'}"
+                  style="aspect-ratio:{skinViewBox(skin, bay.orientation).w}/{skinViewBox(skin, bay.orientation).h}"
                 >
                   empty
                 </div>
