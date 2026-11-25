@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name       "unraid-baywatch">
 <!ENTITY author     "Joshua Mans">
-<!ENTITY version    "2026.11.25">
+<!ENTITY version    "2026.11.25b">
 <!-- Unraid's page router (webGui/template.php) looks pages up by their .page
      filename via basename($path), not by Menu= - confirmed by reading it on
      a real box, and matches how hbaviewer (launch="Tools/HBAviewer_Monitor")
@@ -13,7 +13,7 @@
 <!ENTITY launch     "Tools/BayWatch">
 <!ENTITY pluginURL  "https://raw.githubusercontent.com/joshmans/&name;/main/plugin/&name;.plg">
 <!ENTITY packageURL "https://github.com/joshmans/&name;/releases/download/v&version;/&name;-&version;.txz">
-<!ENTITY sha256     "386960050ab97339f29ab2b6cd5be6ece7003ca0ad05a45a7dd947c51a6f76ee">
+<!ENTITY sha256     "72e1fb1fcbce3cc4067cffa9d060801962fa9e733324d344b33a6de18d4043fb">
 <!ENTITY pluginLOC  "/boot/config/plugins/&name;">
 <!ENTITY emhttpLOC  "/usr/local/emhttp/plugins/&name;">
 <!ENTITY rcdLOC     "/usr/local/etc/rc.d">
@@ -48,6 +48,9 @@
 -->
 
 <CHANGES>
+###2026.11.25b
+ - Add a vertical 3.5" sled skin with rotated text (#23) (#25)
+
 ###2026.11.25
  - Fix brand detection for SATA drives and add IBM (#22) (#24)
 
